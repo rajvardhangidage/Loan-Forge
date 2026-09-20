@@ -1,0 +1,13 @@
+# Example Dockerfile for Loan Service
+# Copy this file to 'Dockerfile' before building:
+#   cp Dockerfile.example Dockerfile
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+
+# Ensure maven build is completed before building the Docker image (e.g. ./mvnw package -DskipTests)
+COPY target/loan-service-1.0.0.jar app.jar
+
+EXPOSE 8083
+
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]

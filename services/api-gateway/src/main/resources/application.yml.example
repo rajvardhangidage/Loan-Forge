@@ -1,5 +1,12 @@
+# ===================================================================
+# API Gateway Configuration Template
+# Copy this file to 'application.yml' in the same directory:
+#   cp application.yml.example application.yml
+# ===================================================================
+
 server:
   port: 8080
+
 spring:
   application:
     name: api-gateway
@@ -37,6 +44,7 @@ spring:
           uri: ${NOTIFICATION_URL:http://localhost:8085}
           predicates:
             - Path=/api/v1/notifications/**
+
 management:
   endpoints:
     web:

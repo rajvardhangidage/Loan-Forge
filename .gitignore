@@ -1,6 +1,55 @@
+# Compiled build outputs
 target/
+**/target/
+*.class
+*.jar
+*.war
+
+# Node dependencies (frontend)
+node_modules/
+npm-debug.log*
+
+# IDEs and Editors
 .idea/
 *.iml
 .vscode/
-.env
+*.ipr
+*.iws
+
+# Operating System files
 .DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Logs and runtime files
+*.log
+logs/
+temp/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Application properties and YAML configs (ignored for local/sensitive overrides)
+**/src/main/resources/application.yml
+**/src/main/resources/application.yaml
+**/src/main/resources/application.properties
+**/src/main/resources/application-*.yml
+**/src/main/resources/application-*.yaml
+**/src/main/resources/application-*.properties
+
+# Dockerfiles (ignored for local overrides)
+Dockerfile
+**/Dockerfile
+Dockerfile.*
+**/Dockerfile.*
+
+# Always track example / template files
+!*.example
+!*.example.*
+!**/*.example
+!**/*.example.*
+!**/Dockerfile.example
+!**/application.yml.example
+!**/application.properties.example
