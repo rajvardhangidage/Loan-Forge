@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS authdb;
+CREATE DATABASE IF NOT EXISTS customerdb;
+CREATE DATABASE IF NOT EXISTS loandb;
+CREATE DATABASE IF NOT EXISTS paymentdb;
+CREATE DATABASE IF NOT EXISTS notificationdb;
+
+GRANT ALL PRIVILEGES ON authdb.* TO 'lending'@'%';
+GRANT ALL PRIVILEGES ON customerdb.* TO 'lending'@'%';
+GRANT ALL PRIVILEGES ON loandb.* TO 'lending'@'%';
+GRANT ALL PRIVILEGES ON paymentdb.* TO 'lending'@'%';
+GRANT ALL PRIVILEGES ON notificationdb.* TO 'lending'@'%';
+FLUSH PRIVILEGES;

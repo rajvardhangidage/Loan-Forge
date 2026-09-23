@@ -1,18 +1,19 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: lending-postgres
+  mysql:
+    image: mysql:8.4
+    container_name: lending-mysql
     environment:
-      POSTGRES_USER: lending
-      POSTGRES_PASSWORD: lending_dev_password
-      POSTGRES_DB: lending
+      MYSQL_ROOT_PASSWORD: root_dev_password
+      MYSQL_DATABASE: lending
+      MYSQL_USER: lending
+      MYSQL_PASSWORD: lending_dev_password
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - mysql_data:/var/lib/mysql
+      - ./infra/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U lending -d lending" ]
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u lending -plending_dev_password || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -58,38 +59,38 @@ services:
     build: ./services/auth-service
     ports: [ "8081:8081" ]
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/authdb
+      DB_URL: jdbc:mysql://mysql:3306/authdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: lending
       DB_PASSWORD: lending_dev_password
       JWT_SECRET: change-me-in-development-only-change-me-in-production
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
 
   customer-service:
     build: ./services/customer-service
     ports: [ "8082:8082" ]
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/customerdb
+      DB_URL: jdbc:mysql://mysql:3306/customerdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: lending
       DB_PASSWORD: lending_dev_password
       JWT_SECRET: change-me-in-development-only-change-me-in-production
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
 
   loan-service:
     build: ./services/loan-service
     ports: [ "8083:8083" ]
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/loandb
+      DB_URL: jdbc:mysql://mysql:3306/loandb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: lending
       DB_PASSWORD: lending_dev_password
       JWT_SECRET: change-me-in-development-only-change-me-in-production
       REDIS_HOST: redis
       KAFKA_BOOTSTRAP: kafka:9092
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -101,13 +102,13 @@ services:
     build: ./services/payment-service
     ports: [ "8084:8084" ]
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/paymentdb
+      DB_URL: jdbc:mysql://mysql:3306/paymentdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: lending
       DB_PASSWORD: lending_dev_password
       JWT_SECRET: change-me-in-development-only-change-me-in-production
       KAFKA_BOOTSTRAP: kafka:9092
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -116,12 +117,12 @@ services:
     build: ./services/notification-service
     ports: [ "8085:8085" ]
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/notificationdb
+      DB_URL: jdbc:mysql://mysql:3306/notificationdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       DB_USERNAME: lending
       DB_PASSWORD: lending_dev_password
       KAFKA_BOOTSTRAP: kafka:9092
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       kafka:
         condition: service_healthy
@@ -151,6 +152,6 @@ services:
       - api-gateway
 
 volumes:
-  postgres_data:
+  mysql_data:
   redis_data:
   kafka_data:

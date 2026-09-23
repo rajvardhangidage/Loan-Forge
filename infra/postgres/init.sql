@@ -1,5 +1,0 @@
-CREATE DATABASE authdb;
-CREATE DATABASE customerdb;
-CREATE DATABASE loandb;
-CREATE DATABASE paymentdb;
-CREATE DATABASE notificationdb;

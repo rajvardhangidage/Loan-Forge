@@ -3,7 +3,7 @@
 [![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat&logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-6DB33F?style=flat&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2024.0.2-6DB33F?style=flat&logo=spring&logoColor=white)](https://spring.io/projects/spring-cloud)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-3.8.1-231F20?style=flat&logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io/)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-v2-2496ED?style=flat&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
@@ -12,7 +12,7 @@ A microservices-based digital lending system that handles borrower onboarding, l
 
 ## Architecture
 
-The system consists of 5 domain services behind an API Gateway, with isolated PostgreSQL databases per service, Redis caching for the loan catalog, and Apache Kafka for asynchronous event handling.
+The system consists of 5 domain services behind an API Gateway, with isolated MySQL databases per service, Redis caching for the loan catalog, and Apache Kafka for asynchronous event handling.
 
 ```mermaid
 flowchart TD
@@ -28,11 +28,11 @@ flowchart TD
     end
 
     subgraph Storage ["Databases & Cache"]
-        DB_Auth[("PostgreSQL: authdb")]
-        DB_Cust[("PostgreSQL: customerdb")]
-        DB_Loan[("PostgreSQL: loandb")]
-        DB_Pay[("PostgreSQL: paymentdb")]
-        DB_Notif[("PostgreSQL: notificationdb")]
+        DB_Auth[("MySQL: authdb")]
+        DB_Cust[("MySQL: customerdb")]
+        DB_Loan[("MySQL: loandb")]
+        DB_Pay[("MySQL: paymentdb")]
+        DB_Notif[("MySQL: notificationdb")]
         RedisCache[("Redis: loan-products:active")]
     end
 
@@ -70,7 +70,7 @@ flowchart TD
 | Runtime | Java | 17 | Core application runtime |
 | Framework | Spring Boot | 3.4.5 | Service framework, REST controllers, JPA repositories |
 | Gateway | Spring Cloud Gateway | 2024.0.2 | Reverse proxy, dynamic route dispatch, global CORS |
-| Database | PostgreSQL | 16-alpine | Primary relational datastore (isolated database per service) |
+| Database | MySQL | 8.4 | Primary relational datastore (isolated database per service) |
 | Persistence | Spring Data JPA / Hibernate | 6.6.x (Boot BOM) | ORM entities, repositories, and transaction boundaries |
 | Migrations | Flyway | 10.21.x (Boot BOM) | Versioned SQL migrations and seed data management |
 | Caching | Redis | 7-alpine | In-memory cache-aside layer for active loan products |
@@ -87,7 +87,7 @@ flowchart TD
   Every payment request requires an `Idempotency-Key` header. `PaymentService.pay()` checks `findByIdempotencyKey()` before persisting, backed by a `UNIQUE` index on the `idempotency_key` column. If a client retries due to a network drop or timeout, the existing transaction is returned without re-charging or firing duplicate Kafka events.  
   *Why:* Prevents double-charging customers on client retries or transient network disconnects.
 
-- **Strict Database-per-Service Isolation** (`infra/postgres/init.sql`, `docker-compose.yml`)  
+- **Strict Database-per-Service Isolation** (`infra/mysql/init.sql`, `docker-compose.yml`)  
   Rather than sharing a single schema, the system provisions five distinct databases (`authdb`, `customerdb`, `loandb`, `paymentdb`, `notificationdb`). Services never query each other's tables directly and communicate strictly over REST APIs or Kafka events.  
   *Why:* Preserves service boundaries and prevents cross-service database coupling or table-level locks between independent domains.
 
@@ -96,7 +96,7 @@ flowchart TD
   *Why:* Guarantees that the sum of principal payments exactly equals the disbursed loan amount, preventing financial rounding drift.
 
 - **Resilient Cache-Aside Pattern with DB Fallback** (`LoanService.java:activeProducts`)  
-  The loan catalog is cached in Redis with a 10-minute TTL. The Redis lookup is wrapped in a try/catch block so that if Redis is down or experiencing network issues, the service automatically falls back to querying PostgreSQL directly.  
+  The loan catalog is cached in Redis with a 10-minute TTL. The Redis lookup is wrapped in a try/catch block so that if Redis is down or experiencing network issues, the service automatically falls back to querying MySQL directly.  
   *Why:* Prevents Redis from becoming a single point of failure for loan application browsing.
 
 - **Stateless JWT Authorization with Local Role Parsing** (`SecurityConfig.java`, `JwtAuthenticationFilter.java`)  
@@ -161,7 +161,7 @@ The containers use the following environment variables (defined in `docker-compo
 
 | Variable | Default (Local Compose) | Purpose |
 | :--- | :--- | :--- |
-| `DB_URL` | `jdbc:postgresql://postgres:5432/<dbname>` | PostgreSQL database connection URL |
+| `DB_URL` | `jdbc:mysql://mysql:3306/<dbname>` | MySQL database connection URL |
 | `DB_USERNAME` | `lending` | Database user |
 | `DB_PASSWORD` | `lending_dev_password` | Database password |
 | `JWT_SECRET` | `change-me-in-development-only-change-me-in-production` | Secret key for JWT signing/verification |
@@ -193,9 +193,9 @@ The frontend dashboard is available at [http://localhost:3000](http://localhost:
 ```text
 fintech-lending-platform/
 ├── pom.xml                   # Root Maven POM (manages dependencies & plugin versions)
-├── docker-compose.yml        # Orchestrates Postgres, Redis, Kafka, all 6 services & Web UI
+├── docker-compose.yml        # Orchestrates MySQL, Redis, Kafka, all 6 services & Web UI
 ├── infra/
-│   └── postgres/init.sql     # Database setup script creating individual databases
+│   └── mysql/init.sql        # Database setup script creating individual databases
 ├── frontend/                 # Static dashboard served via Nginx (port 3000)
 └── services/
     ├── api-gateway/          # Spring Cloud Gateway edge router (port 8080)

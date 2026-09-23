@@ -45,7 +45,7 @@ The FinTech Lending Platform has been verified with a multi-module Maven build l
 # Run complete verification lifecycle
 ./mvnw clean verify
 
-# Start full multi-service stack with PostgreSQL, Redis, Kafka, and API Gateway
+# Start full multi-service stack with MySQL, Redis, Kafka, and API Gateway
 docker compose up --build
 ```
 

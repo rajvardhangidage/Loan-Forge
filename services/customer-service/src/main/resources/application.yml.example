@@ -11,12 +11,16 @@ spring:
   application:
     name: customer-service
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/customerdb}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/customerdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:your_db_username}
     password: ${DB_PASSWORD:your_db_password}
   jpa:
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        type:
+          preferred_uuid_jdbc_type: VARCHAR
     open-in-view: false
   flyway:
     enabled: true
@@ -29,5 +33,5 @@ management:
 
 app:
   jwt:
-    # Must match the JWT secret configured across your services
+    # Must match the JWT secret configured across all services
     secret: ${JWT_SECRET:replace-with-a-secure-256-bit-secret-key-for-jwt-tokens}
